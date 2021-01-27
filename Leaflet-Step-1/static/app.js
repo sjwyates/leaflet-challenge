@@ -1,11 +1,8 @@
 const geoJsonQueryURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson"
 
 const theMap = L.map("map-target", {
-    center: [
-      40, -105
-    ],
+    center: [ 40, -105 ],
     zoom: 5,
-    layers
 });
 
 const earthQuakeLayer = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
@@ -22,9 +19,20 @@ d3.json(geoJsonQueryURL, (res) => {
     const quakes = res.features.map(quake => {
         return {
             magnitude: quake.properties.mag,
-            latlng: quake.coordinates.slice(0,2).reverse(),
-            depth: quake.coordinates[2]
+            latlng: quake.geometry.coordinates.slice(0,2).reverse(),
+            depth: quake.geometry.coordinates[2]
         }
     })
-
+    const maxDepth = d3.max(quakes, q => q.depth);
+    quakes.forEach(quake => {
+        const fillColor = d3.interpolateRdYlGn(quake.depth / maxDepth)
+        const markerSize = quake.magnitude * 20;
+        L.circle(quake.latlng, {
+            color: fillColor,
+            fillOpacity: 0.75,
+            fillcolor: fillColor,
+            radius: markerSize
+        })
+        .bindPopup(`<p>Magnitude: ${quake.magnitude}</p><hr><p>Depth: ${quake.depth}</p>`).addTo(theMap);
+    })
 })
