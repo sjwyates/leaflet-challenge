@@ -3,7 +3,7 @@ body {
   margin: 0;
 }
 
-#map,
+#map-target,
 body,
 html {
   height: 100%;
